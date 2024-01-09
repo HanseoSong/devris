@@ -1,0 +1,17 @@
+#keyview {
+    position:absolute;
+    bottom: 50px;
+    right: 50px;
+}
+
+#board {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+}
+
+#block {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+}
