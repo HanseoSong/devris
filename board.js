@@ -20,5 +20,3 @@ function drawBoard() {
         if(board[i][j]) ctx.fillRect(10+40*j, 10+40*(i-2), 40, 40);
     }
 }
-
-setInterval(drawBoard, 1000/60);

@@ -1,4 +1,4 @@
-const tetrimino = {
+const tetromino = {
     S: [
         [
             [0, 1, 1, 0],
