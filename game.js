@@ -38,6 +38,14 @@ class Block {
             }
             return true;
         },
+        this.halfturn = () => {
+            this.r = (this.r + 2) % 4;
+            if(collide(board, this)) {
+                this.r = (this.r + 2) % 4;
+                return false;
+            }
+            return true;
+        },
         this.cw = () => {
             this.r = (this.r + 1) % 4;
             if(collide(board, this)) {
@@ -158,9 +166,13 @@ function frame() {
         block.ccw();
     }
 
+    if(isPressed["half"] && !wasPressed["half"]) {
+        block.halfturn();
+    }
+
     if(isPressed["down"]) {
-        gravcount=0;
-        block.down();
+        if(!block.down()) gravcount++;
+        else gravcount=0;
     }
 
     if(isPressed["hd"] && !wasPressed["hd"]) {
