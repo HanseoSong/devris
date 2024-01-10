@@ -42,8 +42,6 @@ function kick(block, direction) {
     }
     else kicktable = kickSZLJT[r];
 
-    console.log(r, kicktable);
-
     for(let i=0; i<5; i++) {
         block.x+=kicktable[i]["dx"]*(direction=="cw"?1:-1);
         block.y-=kicktable[i]["dy"]*(direction=="cw"?1:-1);
