@@ -32,7 +32,7 @@ let blockcount=-1;
 
 function kick(block, direction) {
     let kicktable;
-    const r = (direction=="cw"?(block.r+3)%4:(block.r+2)%4);
+    const r = (direction=="cw"?(block.r+3)%4:(block.r));
 
     if(block.mino == 'O') {
         return true;
