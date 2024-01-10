@@ -5,75 +5,53 @@ function shuffle(array) {
     }
 }
 
+class Block {
+    constructor() {
+        this.mino = bag[blockcount % 7];
+        this.r = 0;
+        this.x = 3;
+        this.y = 19;
+
+        this.harddrop = () => {
+            while(!collide(board, this)) this.y++;
+            this.y--;
+        };
+        this.fix = () => {
+            for(let i=0; i<4; i++) for(let j=0; j<4; j++) {
+                if(tetromino[this.mino][this.r][i][j]) board[this.y+i][this.x+j]=true;
+            }
+            block = nextblock();
+        };
+    }
+}
+
 let bag=Object.keys(tetromino);
 let nextbag=Object.keys(tetromino);
 shuffle(nextbag);
 let blockcount=-1;
 
-class Block {
-    constructor() {
-        this.mino = tetromino[bag[blockcount % 7]],
-        this.r = 0,
-        this.x = 3,
-        this.y = 1,
-        this.down = () => {
-            this.y++;
-            if(collide(board, this)) {
-                this.y--;
-                return false;
-            }
-            return true;
-        },
-        this.right = () => {
-            this.x++;
-            if(collide(board, this)) {
-                this.x--;
-                return false;
-            }
-            return true;
-        },
-        this.left = () => {
-            this.x--;
-            if(collide(board, this)) {
-                this.x++;
-                return false;
-            }
-            return true;
-        },
-        this.halfturn = () => {
-            this.r = (this.r + 2) % 4;
-            if(collide(board, this)) {
-                this.r = (this.r + 2) % 4;
-                return false;
-            }
-            return true;
-        },
-        this.cw = () => {
-            this.r = (this.r + 1) % 4;
-            if(collide(board, this)) {
-                this.r = (this.r + 3) % 4;
-                return false;
-            }
-            return true;
-        },
-        this.ccw = () => {
-            this.r = (this.r + 3) % 4;
-            if(collide(board, this)) {
-                this.r = (this.r + 1) % 4;
-                return false;
-            }
-            return true;
-        },
-        this.harddrop = () => {
-            while(!collide(board, this)) this.y++;
-            this.y--;
-        },
-        this.fix = () => {
-            for(let i=0; i<4; i++) for(let j=0; j<4; j++) {
-                if(this.mino[this.r][i][j]) board[this.y+i][this.x+j]=true;
-            }
-        }
+function kick(block, direction) {
+    let kicktable;
+    const r = (direction=="cw"?(block.r+3)%4:(block.r+2)%4);
+
+    if(block.mino == 'O') {
+        return true;
     }
+    else if(block.mino == 'I') {
+        kicktable = kickI[r];
+    }
+    else kicktable = kickSZLJT[r];
+
+    console.log(r, kicktable);
+
+    for(let i=0; i<5; i++) {
+        block.x+=kicktable[i]["dx"]*(direction=="cw"?1:-1);
+        block.y-=kicktable[i]["dy"]*(direction=="cw"?1:-1);
+        if(!collide(board, block)) return true;
+        block.x-=kicktable[i]["dx"]*(direction=="cw"?1:-1);
+        block.y+=kicktable[i]["dy"]*(direction=="cw"?1:-1);
+    }
+    return false;
 }
 
 function nextblock() {
@@ -93,8 +71,8 @@ function gameover() {
 
 function collide(board, block) {
     for(let i=0; i<4; i++) for(let j=0; j<4; j++) {
-        if(block.mino[block.r][i][j]) {
-            if(block.x+j < 0 || 9 < block.x+j || block.y+i<-1 || block.y+i > 21) return true;
+        if(tetromino[block.mino][block.r][i][j]) {
+            if(block.x+j < 0 || 10 <= block.x+j || block.y+i<-1 || block.y+i >= 40) return true;
             if(board[block.y+i][block.x+j]) return true;
         }
     }
@@ -105,11 +83,10 @@ let block = nextblock();
 
 function drawBlock() {
     const canvas = document.getElementById("block");
-    if(canvas==null) return;
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     for(let i=0; i<4; i++) for(let j=0; j<4; j++) {
-        if(block.mino[block.r][i][j]) ctx.fillRect(10+40*(block.x+j), 10+40*(block.y+i-2), 40, 40);
+        if(tetromino[block.mino][block.r][i][j]) ctx.fillRect(10+40*(block.x+j), 10+40*(block.y+i-20), 40, 40);
     }
 }
 
@@ -137,7 +114,7 @@ let gravcount = 0;
 let das = 10;
 let rdascount = 0;
 let ldascount = 0;
-let wasPressed;
+let wasPressed = isPressed;
 
 function isRowFilled(i) {
     for(let j=0; j<10; j++) {
@@ -154,7 +131,7 @@ function breakLine(r) {
 }
 
 function checkFilled() {
-    for(let i=21; i>=0; i--) {
+    for(let i=39; i>=0; i--) {
         while(isRowFilled(i)) breakLine(i);
     }
 }
@@ -164,54 +141,85 @@ function frame() {
 
     if(gravcount>=gravity) {
         gravcount=0;
-        if(!block.down()) {
+        const moved = {...block};
+        moved.y++;
+        if(!collide(board, moved)) block.y++;
+        else {
             block.fix();
             checkFilled();
-            block=nextblock();
         }
     }
 
     if(isPressed["right"]) {
-        if(rdascount==0 || rdascount>=das) block.right();
+        if(rdascount==0 || rdascount>=das) {
+            const moved = {...block};
+            moved.x++;
+            if(!collide(board, moved)) block.x++;
+        }
         rdascount++;
     }
     else rdascount=0;
 
     if(isPressed["left"]) {
-        if(ldascount==0 || ldascount>=das) block.left();
+        if(ldascount==0 || ldascount>=das) {
+            const moved = {...block};
+            moved.x--;
+            if(!collide(board, moved)) block.x--;
+        }
         ldascount++;
     }
     else ldascount=0;
 
     if(isPressed["cw"] && !wasPressed["cw"]) {
-        block.cw();
+        const moved = {...block};
+        moved.r = (moved.r + 1) % 4;
+        if(kick(moved, "cw")) {
+            block.r = (block.r + 1) % 4;
+            kick(block, "cw");
+        }
     }
 
     if(isPressed["ccw"] && !wasPressed["ccw"]) {
-        block.ccw();
+        const moved = {...block};
+        moved.r = (moved.r + 3) % 4;
+        if(kick(moved, "ccw")) {
+            block.r = (block.r + 3) % 4;
+            kick(block, "ccw");
+        }
     }
 
     if(isPressed["half"] && !wasPressed["half"]) {
-        block.halfturn();
+        const moved = {...block};
+        moved.r = (moved.r + 2) % 4;
+        if(!collide(board, moved)) block.r = (block.r + 2) % 4;
     }
 
     if(isPressed["down"]) {
-        if(!block.down()) gravcount++;
-        else gravcount=0;
+        const moved = {...block};
+        moved.y++;
+        if(!collide(board, moved)) {
+            block.y++;
+            gravcount = 0;
+        }
     }
 
     if(isPressed["hd"] && !wasPressed["hd"]) {
         block.harddrop();
+        gravcount=0;
         block.fix();
         checkFilled();
-        block=nextblock();
-        gravcount=0;
     }
 
     wasPressed = {...isPressed}
-    setTimeout(drawBoard, 1000/60);
-    setTimeout(drawBlock, 1000/60);
-    setTimeout(drawNext, 1000/60);
 }
 
-frameInterval = setInterval(frame, 1000/60);
+window.onload = () => {
+    frameInterval = setInterval(() => {
+        frame();
+        setTimeout(() => {
+            drawBoard();
+            drawBlock();
+            drawNext();
+        }, 1000/60);
+    }, 1000/60);
+}
