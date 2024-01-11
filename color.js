@@ -1,9 +1,9 @@
 color = {
-    S: "limegreen",
-    Z: "orangered",
-    L: "sandybrown",
-    J: "deepskyblue",
-    I: "powderblue",
-    O: "khaki",
-    T: "mediumpurple"
+    S: "green",
+    Z: "red",
+    L: "orange",
+    J: "blue",
+    I: "skyblue",
+    O: "yellow",
+    T: "purple"
 }
