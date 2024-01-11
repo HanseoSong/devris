@@ -11,20 +11,21 @@ class Block {
         this.r = 0;
         this.x = 3;
         this.y = 19;
-
-        this.harddrop = () => {
-            while(!collide(board, this)) this.y++;
-            this.y--;
-        };
-        this.fix = () => {
-            for(let i=0; i<4; i++) for(let j=0; j<4; j++) {
-                if(tetromino[this.mino][this.r][i][j]) board[this.y+i][this.x+j]=true;
-            }
-            block = nextblock();
-            wasHolded=false;
-        };
     }
 }
+
+function harddrop(board, block) {
+    while(!collide(board, block)) block.y++;
+    block.y--;
+};
+
+function fix() {
+    for(let i=0; i<4; i++) for(let j=0; j<4; j++) {
+        if(tetromino[block.mino][block.r][i][j]) board[block.y+i][block.x+j]=block.mino;
+    }
+    block = nextblock();
+    wasHolded=false;
+};
 
 let bag=Object.keys(tetromino);
 let nextbag=Object.keys(tetromino);
@@ -87,11 +88,14 @@ function drawHold() {
     const canvas = document.getElementById("hold");
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = color[hold];
+    ctx.strokeStyle = "#888";
     if(hold==null) return;
     else {
         for(let i=0; i<4; i++) for(let j=0; j<4; j++) {
             if(tetromino[hold][0][i][j]) {
                 ctx.fillRect(10+20*j, 10+20*i, 20, 20);
+                ctx.strokeRect(10+20*j, 10+20*i, 20, 20);
             }
         }
     }
@@ -100,9 +104,14 @@ function drawHold() {
 function drawBlock() {
     const canvas = document.getElementById("block");
     const ctx = canvas.getContext("2d");
+    ctx.fillStyle = color[block.mino];
+    ctx.strokeStyle = "#888";
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     for(let i=0; i<4; i++) for(let j=0; j<4; j++) {
-        if(tetromino[block.mino][block.r][i][j]) ctx.fillRect(10+30*(block.x+j), 10+30*(block.y+i-20), 30, 30);
+        if(tetromino[block.mino][block.r][i][j]) {
+            ctx.fillRect(10+30*(block.x+j), 10+30*(block.y+i-20), 30, 30);
+            ctx.strokeRect(10+30*(block.x+j), 10+30*(block.y+i-20), 30, 30);
+        }
     }
 }
 
@@ -110,17 +119,34 @@ function drawNext() {
     const canvas = document.getElementById("next");
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = "#888";
     for(let i=1; i<=5; i++) for(let j=0; j<4; j++) for(let k=0; k<4; k++){
         if(blockcount%7+i<7) {
+            ctx.fillStyle = color[bag[blockcount%7+i]];
             if(tetromino[bag[blockcount%7+i]][0][j][k]) {
                 ctx.fillRect(10+20*k, 10+20*((i-1)*4+j), 20, 20);
+                ctx.strokeRect(10+20*k, 10+20*((i-1)*4+j), 20, 20);
             }
         }
         else {
+            ctx.fillStyle = color[nextbag[blockcount%7+i-7]];
             if(tetromino[nextbag[blockcount%7+i-7]][0][j][k]) {
                 ctx.fillRect(10+20*k, 10+20*((i-1)*4+j), 20, 20);
+                ctx.strokeRect(10+20*k, 10+20*((i-1)*4+j), 20, 20);
             }
         }
+    }
+}
+
+function drawGhost() {
+    const ghost = {...block};
+    harddrop(board, ghost);
+    const canvas = document.getElementById("ghost");
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = color[ghost.mino];
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for(let i=0; i<4; i++) for(let j=0; j<4; j++) {
+        if(tetromino[ghost.mino][ghost.r][i][j]) ctx.fillRect(10+30*(ghost.x+j), 10+30*(ghost.y+i-20), 30, 30);
     }
 }
 
@@ -170,7 +196,7 @@ function frame() {
         moved.y++;
         if(!collide(board, moved)) block.y++;
         else {
-            block.fix();
+            fix();
             checkFilled();
         }
     }
@@ -229,9 +255,9 @@ function frame() {
     }
 
     if(isPressed["hd"] && !wasPressed["hd"]) {
-        block.harddrop();
+        harddrop(board, block);
         gravcount=0;
-        block.fix();
+        fix();
         checkFilled();
     }
 
@@ -245,6 +271,7 @@ window.onload = () => {
             if(isgameover) return;
             drawHold();
             drawBoard();
+            drawGhost();
             drawBlock();
             drawNext();
         }, 1000/60);

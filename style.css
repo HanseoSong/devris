@@ -10,6 +10,13 @@
     left: 120px;
 }
 
+#ghost {
+    position: absolute;
+    bottom: 20px;
+    left: 120px;
+    opacity: 0.4;
+}
+
 #block {
     position: absolute;
     bottom: 20px;
@@ -23,12 +30,12 @@
 
 #next {
     position: absolute;
-    bottom: 240px;
+    bottom: 220px;
     left: 440px;
 }
 
 #hold {
     position: absolute;
-    bottom: 540px;
+    bottom: 520px;
     left: 20px;
 }
