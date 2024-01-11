@@ -14,9 +14,9 @@ function drawBoard() {
     ctx.strokeStyle = "#ddd";
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     for(let i=20; i<40; i++) for(let j=0; j<10; j++) {
-        ctx.strokeRect(10+40*j, 10+40*(i-20), 40, 40);
+        ctx.strokeRect(10+30*j, 10+30*(i-20), 30, 30);
     }
     for(let i=0; i<40; i++) for(let j=0; j<10; j++) {
-        if(board[i][j]) ctx.fillRect(10+40*j, 10+40*(i-20), 40, 40);
+        if(board[i][j]) ctx.fillRect(10+30*j, 10+30*(i-20), 30, 30);
     }
 }

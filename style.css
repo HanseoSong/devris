@@ -7,13 +7,13 @@
 #board {
     position: absolute;
     bottom: 20px;
-    left: 20px;
+    left: 120px;
 }
 
 #block {
     position: absolute;
     bottom: 20px;
-    left: 20px;
+    left: 120px;
 }
 
 #paragraph {
@@ -23,6 +23,12 @@
 
 #next {
     position: absolute;
-    bottom: 20px;
+    bottom: 240px;
     left: 440px;
+}
+
+#hold {
+    position: absolute;
+    bottom: 540px;
+    left: 20px;
 }

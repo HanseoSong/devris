@@ -6,8 +6,8 @@ function shuffle(array) {
 }
 
 class Block {
-    constructor() {
-        this.mino = bag[blockcount % 7];
+    constructor(mino) {
+        this.mino = mino;
         this.r = 0;
         this.x = 3;
         this.y = 19;
@@ -21,6 +21,7 @@ class Block {
                 if(tetromino[this.mino][this.r][i][j]) board[this.y+i][this.x+j]=true;
             }
             block = nextblock();
+            wasHolded=false;
         };
     }
 }
@@ -58,12 +59,14 @@ function nextblock() {
         bag = [...nextbag];
         shuffle(nextbag);
     }
-    const block = new Block();
+    const block = new Block(bag[blockcount % 7]);
     if(collide(board, block)) gameover();
     else return block;
 }
 
+let isgameover=false;
 function gameover() {
+    isgameover=true;
     clearInterval(frameInterval);
 }
 
@@ -78,30 +81,44 @@ function collide(board, block) {
 }
 
 let block = nextblock();
+let hold = null;
+
+function drawHold() {
+    const canvas = document.getElementById("hold");
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if(hold==null) return;
+    else {
+        for(let i=0; i<4; i++) for(let j=0; j<4; j++) {
+            if(tetromino[hold][0][i][j]) {
+                ctx.fillRect(10+20*j, 10+20*i, 20, 20);
+            }
+        }
+    }
+}
 
 function drawBlock() {
     const canvas = document.getElementById("block");
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     for(let i=0; i<4; i++) for(let j=0; j<4; j++) {
-        if(tetromino[block.mino][block.r][i][j]) ctx.fillRect(10+40*(block.x+j), 10+40*(block.y+i-20), 40, 40);
+        if(tetromino[block.mino][block.r][i][j]) ctx.fillRect(10+30*(block.x+j), 10+30*(block.y+i-20), 30, 30);
     }
 }
 
 function drawNext() {
     const canvas = document.getElementById("next");
-    if(canvas==null) return;
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     for(let i=1; i<=5; i++) for(let j=0; j<4; j++) for(let k=0; k<4; k++){
         if(blockcount%7+i<7) {
             if(tetromino[bag[blockcount%7+i]][0][j][k]) {
-                ctx.fillRect(10+30*k, 10+30*((i-1)*4+j), 30, 30);
+                ctx.fillRect(10+20*k, 10+20*((i-1)*4+j), 20, 20);
             }
         }
         else {
             if(tetromino[nextbag[blockcount%7+i-7]][0][j][k]) {
-                ctx.fillRect(10+30*k, 10+30*((i-1)*4+j), 30, 30);
+                ctx.fillRect(10+20*k, 10+20*((i-1)*4+j), 20, 20);
             }
         }
     }
@@ -113,6 +130,7 @@ let das = 10;
 let rdascount = 0;
 let ldascount = 0;
 let wasPressed = isPressed;
+let wasHolded = false;
 
 function isRowFilled(i) {
     for(let j=0; j<10; j++) {
@@ -135,6 +153,15 @@ function checkFilled() {
 }
 
 function frame() {
+    if(isPressed["hold"] && !wasPressed["hold"] && !wasHolded) {
+        const tmp = hold;
+        hold = block.mino;
+        if(tmp==null) block=nextblock();
+        else block = new Block(tmp);
+        wasHolded=true;
+        gravcount=0;
+    }
+
     gravcount++;
 
     if(gravcount>=gravity) {
@@ -215,6 +242,8 @@ window.onload = () => {
     frameInterval = setInterval(() => {
         frame();
         setTimeout(() => {
+            if(isgameover) return;
+            drawHold();
             drawBoard();
             drawBlock();
             drawNext();
